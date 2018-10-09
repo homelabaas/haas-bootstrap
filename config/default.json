@@ -1,0 +1,7 @@
+{
+    "Logfiles": {
+        "AccessFilename": "access.log",
+        "AccessLogFormat": "[:date[clf]] :id :status :method :url :response-time"
+    },
+    "Port": 3000
+}
