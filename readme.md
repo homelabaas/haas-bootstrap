@@ -1,4 +1,4 @@
-# React Typescript Full Stack Starter Kit
+# Homelab as a Service Bootstrap
 
 [![CircleCI](https://circleci.com/gh/homelabaas/haas-bootstrap.svg?style=svg)](https://circleci.com/gh/homelabaas/haas-bootstrap)
 
