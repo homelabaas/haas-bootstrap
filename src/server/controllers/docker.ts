@@ -8,6 +8,8 @@ const router: Router = Router();
 const localSocket = "/var/run/docker.sock";
 const windowsSocket = "//./pipe/docker_engine";
 
+const containers = ["postgres", "minio/minio", "homelabaas/haas-application"];
+
 router.get("/", async (req: Request, res: Response) => {
     try {
         res.json({});

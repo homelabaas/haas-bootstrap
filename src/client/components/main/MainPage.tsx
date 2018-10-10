@@ -6,75 +6,80 @@ import { MessageDisplay } from "../common/MessageDisplay";
 import { IDropdownSelection } from "../IDropdownSelection";
 import { IConnectRequest } from "../../../common/models/IConnectRequest";
 import { IConnectResponse } from "../../../common/models/IConnectResponse";
+import { FirstStepPage } from "./FirstStep";
+import { SecondStepPage } from "./SecondStep";
+import { ThirdStepPage } from "./ThirdStep";
 
 interface IScreenState {
-    DeploymentTargetDropdown: IDropdownSelection[];
+    WizardStage: number;
     DeploymentTarget: string;
-    connectMessageSuccess?: boolean;
-    connectMessage: string;
+    FirstStepEnabled: boolean;
+    SecondStepEnabled: boolean;
+    ThirdStepEnabled: boolean;
 }
 
 class MainPageComponent extends React.Component<{}, IScreenState> {
     constructor(props: any) {
         super(props);
         this.state = {
-            DeploymentTargetDropdown: [],
+            WizardStage: 0,
             DeploymentTarget: "",
-            connectMessage: "",
-            connectMessageSuccess: null
+            FirstStepEnabled: true,
+            SecondStepEnabled: true,
+            ThirdStepEnabled: true
         };
     }
 
     public async componentDidMount() {
-        const deployment = await api.getOptions();
-        const deploymentTargetDropdown = deployment.Options.map((p) => {
-            return {
-                key: p.Id.toString(),
-                value: p.Id.toString(),
-                text: p.Description
-            };
-        });
-
-        if (deployment) {
-            this.setState({
-                DeploymentTargetDropdown: deploymentTargetDropdown,
-                DeploymentTarget: deployment.default
-             });
-        }
+        //
     }
 
-    public handleTargetChange = async (event: any, data: any) => {
-        const deploymentTarget = data.value;
+    public onChangeDeploymentTarget = (target: string): void => {
         this.setState({
-            DeploymentTarget: deploymentTarget
+            DeploymentTarget: target
         });
     }
 
-    public handleConnect = async () => {
-        const connectRequest: IConnectRequest = {
-            Type: this.state.DeploymentTarget
-        };
-        const connectResponse = await api.connectToDocker(connectRequest);
+    public onReadyFirstStep = () => {
         this.setState({
-            connectMessage: connectResponse.Message,
-            connectMessageSuccess: connectResponse.Success
+            WizardStage: 1,
+            FirstStepEnabled: false
+        });
+    }
+
+    public onReadySecondStep = () => {
+        this.setState({
+            WizardStage: 2,
+            SecondStepEnabled: false
+        });
+    }
+
+    public onReadyThirdStep = () => {
+        this.setState({
+            WizardStage: 3,
+            ThirdStepEnabled: false
         });
     }
 
     public render() {
         return (
-          <div className="row">
-            <h2>Step 1 - Connect to Docker</h2>
-            <h4>Select your environment:</h4>
-            <Dropdown fluid selection value={this.state.DeploymentTarget}
-                                    options={this.state.DeploymentTargetDropdown} placeholder="Select"
-                                    onChange={this.handleTargetChange} />
-            <br />
-            <Button onClick={this.handleConnect} >Connect</Button>
-            <MessageDisplay messageSuccess={this.state.connectMessageSuccess} message={this.state.connectMessage} />
-
-          </div>
-       );
+            <>
+                <FirstStepPage DeploymentTarget={this.state.DeploymentTarget}
+                    onChangeDeploymentTarget={this.onChangeDeploymentTarget}
+                    onReadyNextStep={this.onReadyFirstStep}
+                    Enabled={this.state.FirstStepEnabled} />
+                <br />
+                { this.state.WizardStage >= 1 &&
+                    <SecondStepPage Enabled={this.state.SecondStepEnabled}
+                        onReadyNextStep={this.onReadySecondStep} />
+                }
+                <br />
+                { this.state.WizardStage >= 2 &&
+                    <ThirdStepPage Enabled={this.state.SecondStepEnabled}
+                    onReadyNextStep={this.onReadyThirdStep} />
+                }
+            </>
+        );
     }
 }
 
