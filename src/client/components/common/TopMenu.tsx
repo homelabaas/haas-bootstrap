@@ -5,19 +5,16 @@ import { Link } from "react-router-dom";
 
 const TopMenuComponent: React.StatelessComponent<{}> = (props) => {
   return (
-      <Menu fixed="top" inverted>
+      <Menu fixed="top">
         <Container>
-          <Menu.Item as="a" header>
+          <Menu.Item header>
             <Image
               size="mini"
               src="/public/images/logo.png"
               style={{ marginRight: "1.5em" }}
             />
-            My App
+            Homelab as a Service - Bootstrap
           </Menu.Item>
-          <Menu.Item><Link to="/">Home</Link></Menu.Item>
-          <Menu.Item><Link to="/settings">Settings</Link></Menu.Item>
-          <Menu.Item><Link to="/status">Status</Link></Menu.Item>
         </Container>
       </Menu>
   );

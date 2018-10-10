@@ -1,9 +1,30 @@
 {
     "version": "2.0.0",
-    "command": "yarn",
     "tasks": [
         {
-            "label": "dev:build"
+            "type": "shell",
+            "command": "node_modules\\.bin\\rimraf.cmd",
+            "args": [
+                "build"
+            ],
+            "label": "Clean",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "problemMatcher": []
+        },
+        {
+            "type": "typescript",
+            "tsconfig": "src\\server\\tsconfig.json",
+            "label": "Build",
+            "problemMatcher": [
+                "$tsc"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
         }
     ]
 }

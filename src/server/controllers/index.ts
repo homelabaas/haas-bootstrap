@@ -1,10 +1,10 @@
 import { Application } from "express";
-import { BuildController } from "./build";
+import { DockerController } from "./docker";
 import { HomeController } from "./home";
-import { StatusController } from "./status";
+import { OptionsController } from "./options";
 
 export function registerRoutes(app: Application): void {
-    app.use("/api/build", BuildController);
-    app.use("/api/status", StatusController);
+    app.use("/api/options", OptionsController);
+    app.use("/api/docker", DockerController);
     app.use("/*", HomeController);
 }

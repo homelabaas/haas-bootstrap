@@ -1,13 +1,16 @@
 import * as bunyan from "bunyan";
 import * as http from "http";
+import { SocketManager } from "./socketManager";
 
 class DependencyManager {
+
+    public SocketManager: SocketManager;
+
     public Initialise = async (server: http.Server,
                                logger: bunyan,
                                logFilePath: string,
                                firstRun: boolean) => {
-    // TODO: Manage dependencies in here
-    // such as databases and other services.
+    this.SocketManager = new SocketManager(server);
     }
 }
 
