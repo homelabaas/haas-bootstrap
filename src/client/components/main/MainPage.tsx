@@ -9,6 +9,7 @@ import { IConnectResponse } from "../../../common/models/IConnectResponse";
 import { FirstStepPage } from "./FirstStep";
 import { SecondStepPage } from "./SecondStep";
 import { ThirdStepPage } from "./ThirdStep";
+import { FourthStepPage } from "./FourthStep";
 
 interface IScreenState {
     WizardStage: number;
@@ -77,6 +78,10 @@ class MainPageComponent extends React.Component<{}, IScreenState> {
                 { this.state.WizardStage >= 2 &&
                     <ThirdStepPage Enabled={this.state.SecondStepEnabled}
                     onReadyNextStep={this.onReadyThirdStep} />
+                }
+                <br />
+                { this.state.WizardStage >= 3 &&
+                    <FourthStepPage />
                 }
             </>
         );
