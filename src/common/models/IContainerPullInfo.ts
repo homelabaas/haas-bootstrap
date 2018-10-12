@@ -1,5 +1,4 @@
 export interface IContainerPullInfo {
-    Name: string;
-    Container: string;
-    Ports: string;
+    container: string;
+    percent: number;
 }

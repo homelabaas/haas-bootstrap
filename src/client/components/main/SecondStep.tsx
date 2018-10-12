@@ -1,24 +1,22 @@
 import * as React from "react";
 import { hot } from "react-hot-loader";
 import * as api from "../../api";
-import { Progress , Button } from "semantic-ui-react";
+import { Progress, Button } from "semantic-ui-react";
 import { MessageDisplay } from "../common/MessageDisplay";
-import { IDropdownSelection } from "../IDropdownSelection";
-import { IConnectRequest } from "../../../common/models/IConnectRequest";
-import { IConnectResponse } from "../../../common/models/IConnectResponse";
 import { Sockets } from "../../socket";
 import { IContainerPullInfo } from "../../../common/models/IContainerPullInfo";
 
 interface IContainerProgess {
-    Name: string;
+    Container: string;
     Progress: number;
 }
 
 interface ISecondStepState {
-    ContainerProgress: [];
+    ContainerProgress: IContainerProgess[];
     DisplayProgressBars: boolean;
     connectMessageSuccess?: boolean;
     connectMessage: string;
+    Disabled: boolean;
 }
 
 interface IPropData {
@@ -33,12 +31,9 @@ class SecondStepComponent extends React.Component<IPropData, ISecondStepState> {
             ContainerProgress: [],
             DisplayProgressBars: false,
             connectMessage: "",
-            connectMessageSuccess: null
+            connectMessageSuccess: null,
+            Disabled: false
         };
-    }
-
-    public async componentDidMount() {
-        //
     }
 
     // Call this when this step is finished
@@ -47,10 +42,29 @@ class SecondStepComponent extends React.Component<IPropData, ISecondStepState> {
     }
 
     public receivePullUpdate = async (data: IContainerPullInfo) => {
-        // do something with this info
+        const existingContainerProgress = this.state.ContainerProgress.find((p) => p.Container === data.container);
+        if (existingContainerProgress === undefined) {
+            const newContainerProgress =  Object.assign(this.state.ContainerProgress, {});
+            newContainerProgress.push({ Container: data.container, Progress: data.percent});
+            this.setState({
+                ContainerProgress: newContainerProgress
+            });
+        } else {
+            const newContainerProgress =  Object.assign(this.state.ContainerProgress, {});
+            newContainerProgress.find((p) => p.Container === data.container).Progress = data.percent;
+            if (newContainerProgress.filter((p) => p.Progress === 100).length === newContainerProgress.length) {
+                this.props.onReadyNextStep();
+            }
+            this.setState({
+                ContainerProgress: newContainerProgress
+            });
+        }
     }
 
     public handleGo = async () => {
+        this.setState({
+            Disabled: true
+        });
         Sockets().startContainerPullUpdateReceive(this.receivePullUpdate);
         const returnVal = await api.pullDockerContainers();
         if (!returnVal.Success) {
@@ -59,12 +73,15 @@ class SecondStepComponent extends React.Component<IPropData, ISecondStepState> {
     }
 
     public render() {
+        const progressRows = this.state.ContainerProgress.map((p) => {
+            return <Progress key={p.Container} percent={p.Progress}>{p.Container}</Progress>;
+        });
         return (
           <div className="row">
             <h2>Step 2 - Download Docker Containers</h2>
-            <Button onClick={this.handleGo}>Go!</Button>
+            <Button onClick={this.handleGo} disabled={this.state.Disabled}>Go!</Button>
             <MessageDisplay messageSuccess={this.state.connectMessageSuccess} message={this.state.connectMessage} />
-
+            {progressRows}
           </div>
        );
     }

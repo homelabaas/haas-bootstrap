@@ -1,7 +1,8 @@
-import * as Docker from "dockerode";
 import { Request, Response, Router } from "express";
 import { IConnectRequest } from "../../common/models/IConnectRequest";
 import { IConnectResponse } from "../../common/models/IConnectResponse";
+import { Dependencies } from "../dependencyManager";
+import { DockerHelper } from "../dockerHelper";
 
 const router: Router = Router();
 
@@ -9,6 +10,8 @@ const localSocket = "/var/run/docker.sock";
 const windowsSocket = "//./pipe/docker_engine";
 
 const containers = ["postgres", "minio/minio", "homelabaas/haas-application"];
+
+let connectionSettings: IConnectRequest = null;
 
 router.get("/", async (req: Request, res: Response) => {
     try {
@@ -27,39 +30,22 @@ router.post("/run", async (req: Request, res: Response) => {
 });
 
 router.post("/pull", async (req: Request, res: Response) => {
-    // Pull down containers here
+    const docker = new DockerHelper(connectionSettings);
+    const socketManager = Dependencies().SocketManager;
+    docker.PullContainers(containers, socketManager.SendContainerPullUpdate);
 });
 
 router.post("/connect", async (req: Request, res: Response) => {
     const connectRequest = req.body as IConnectRequest;
     try {
-        let success = false;
-        if (connectRequest.Type === "dockerwindows") {
-            this.Docker = new Docker({ socketPath: windowsSocket });
-            const dockerList = await this.Docker.listContainers();
-            success = true;
-        } else if (connectRequest.Type === "dockermac") {
-            this.Docker = new Docker({ socketPath: localSocket });
-            const dockerList = await this.Docker.listContainers();
-            success = true;
-        } else if (connectRequest.Type === "docker") {
-            this.Docker = new Docker({ socketPath: localSocket });
-            const dockerList = await this.Docker.listContainers();
-            success = true;
-        }
-        if (success) {
-            const connectResponse: IConnectResponse = {
-                Success: true,
-                Message: "Successfully connected."
-            };
-            res.json(connectResponse);
-        } else {
-            const connectResponse: IConnectResponse = {
-                Success: false,
-                Message: "Unable to connect."
-            };
-            res.json(connectResponse);
-        }
+        const docker = new DockerHelper(connectRequest);
+        const dockerList = await docker.CheckList();
+        connectionSettings = connectRequest;
+        const connectResponse: IConnectResponse = {
+            Success: true,
+            Message: "Successfully connected."
+        };
+        res.json(connectResponse);
     } catch (err) {
         const connectResponse: IConnectResponse = {
             Success: false,
