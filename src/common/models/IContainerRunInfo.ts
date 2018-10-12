@@ -1,4 +1,4 @@
-export interface IContainerInfo {
+export interface IContainerRunInfo {
     Name: string;
     Container: string;
     Ports: string;
