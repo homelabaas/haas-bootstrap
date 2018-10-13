@@ -29,6 +29,7 @@ class ThirdStepComponent extends React.Component<IPropData, IThirdStepState> {
     }
 
     public handleGo = async () => {
+        await api.runDockerContainers();
         this.props.onReadyNextStep();
     }
 

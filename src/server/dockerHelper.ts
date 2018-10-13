@@ -1,5 +1,6 @@
 import * as Docker from "dockerode";
 import { IConnectRequest } from "../common/models/IConnectRequest";
+import { IDockerContainer } from "./IDockerContainer";
 import { PullImage } from "./pullDockerImage";
 
 const localSocket = "/var/run/docker.sock";
@@ -32,15 +33,51 @@ export class DockerHelper {
         return await this.Docker.listContainers();
     }
 
-    public PullContainers = async (containers: string[], updateProgress: (progress: any) => void) => {
+    public RunContainers = async (containers: IDockerContainer[], updateProgress: (progress: any) => void) => {
         // Iterate through all the supplied containers and run Pull
         try {
             for (const container of containers) {
-                updateProgress({container, percent: 0});
+                const createOptions: Docker.ContainerCreateOptions = {
+                    Image: container.Container + ":latest",
+                    AttachStdin: false,
+                    AttachStdout: false,
+                    AttachStderr: false,
+                    HostConfig: {
+                        PortBindings: {
+                        }
+                    },
+                    Env: []
+                };
+                for (const portMapping of container.PortMapping) {
+                    createOptions.HostConfig.PortBindings[portMapping.container + "/tcp"] =
+                        [{
+                            HostPort: portMapping.host.toString()
+                        }];
+                }
+                for (const env of container.EnvironmentVars) {
+                    createOptions.Env.push(env.key + "=" + env.value);
+                }
+                if (container.Command) {
+                    createOptions.Cmd = container.Command;
+                }
+                const containerInfo = await this.Docker.createContainer(createOptions);
+                await this.Docker.getContainer(containerInfo.id).start();
+            }
+        } catch (err) {
+            console.log("Error");
+            console.log(JSON.stringify(err));
+        }
+    }
+
+    public PullContainers = async (containers: IDockerContainer[], updateProgress: (progress: any) => void) => {
+        // Iterate through all the supplied containers and run Pull
+        try {
+            for (const container of containers) {
+                updateProgress({container: container.Container, percent: 0});
             }
             for (const container of containers) {
-                await PullImage(container, this.Socket);
-                updateProgress({container, percent: 100});
+                await PullImage(container.Container, this.Socket);
+                updateProgress({container: container.Container, percent: 100});
             }
         } catch (err) {
             console.log("Error");

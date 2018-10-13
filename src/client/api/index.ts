@@ -18,3 +18,8 @@ export const pullDockerContainers = async () => {
     const returnValue = await axios.default.post("/api/docker/pull", {});
     return returnValue.data as IGenericReturn;
 };
+
+export const runDockerContainers = async () => {
+    const returnValue = await axios.default.post("/api/docker/run", {});
+    return returnValue.data as IGenericReturn;
+};

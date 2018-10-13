@@ -3,13 +3,65 @@ import { IConnectRequest } from "../../common/models/IConnectRequest";
 import { IConnectResponse } from "../../common/models/IConnectResponse";
 import { Dependencies } from "../dependencyManager";
 import { DockerHelper } from "../dockerHelper";
+import { IDockerContainer } from "../IDockerContainer";
 
 const router: Router = Router();
 
 const localSocket = "/var/run/docker.sock";
 const windowsSocket = "//./pipe/docker_engine";
 
-const containers = ["postgres", "minio/minio", "homelabaas/haas-application"];
+const containers: IDockerContainer[] = [
+    {
+        Container: "postgres",
+        EnvironmentVars: [
+            {
+                key: "POSTGRES_PASSWORD",
+                value: "devpostgrespwd"
+            }
+        ],
+        PortMapping: [
+            {
+                container: 5432,
+                host: 5432
+            }
+        ]
+    },
+    {
+        Container: "minio/minio",
+        EnvironmentVars: [
+            {
+                key: "MINIO_ACCESS_KEY",
+                value: "testaccesskey"
+            },
+            {
+                key: "MINIO_SECRET_KEY",
+                value: "testsecretkey"
+            }
+        ],
+        PortMapping: [
+            {
+                container: 9000,
+                host: 9000
+            }
+        ],
+        Command: ["server", "/data"]
+    },
+    {
+        Container: "homelabaas/haas-application",
+        EnvironmentVars: [
+            {
+                key: "NODE_CONFIG",
+                value : "{\"Database\":{ \"ConnectionString\":\"postgres://postgres:devpostgrespwd@host.docker.internal:5432/\"}}"
+            }
+        ],
+        PortMapping: [
+            {
+                container: 3000,
+                host: 3000
+            }
+        ]
+    }
+];
 
 let connectionSettings: IConnectRequest = null;
 
@@ -26,7 +78,9 @@ router.get("/composefile", async (req: Request, res: Response) => {
 });
 
 router.post("/run", async (req: Request, res: Response) => {
-    // Run containers here
+    const docker = new DockerHelper(connectionSettings);
+    const socketManager = Dependencies().SocketManager;
+    docker.RunContainers(containers, socketManager.SendContainerRunUpdate);
 });
 
 router.post("/pull", async (req: Request, res: Response) => {

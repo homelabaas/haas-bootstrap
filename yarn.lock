@@ -56,6 +56,14 @@
   dependencies:
     "@types/node" "*"
 
+"@types/dockerode@^2.5.5":
+  version "2.5.5"
+  resolved "https://registry.yarnpkg.com/@types/dockerode/-/dockerode-2.5.5.tgz#6346ee3b25abc90a91bd5e220cc6f82b3c1478c0"
+  integrity sha512-NSDdW9JUia7bLba87jTfZR/o1YcIFDcSC9HcdrXGJluHVfl8hXiUBFJwB9z3LSk/xmvv/pmEKzHFq6JmpNhlfg==
+  dependencies:
+    "@types/events" "*"
+    "@types/node" "*"
+
 "@types/events@*":
   version "1.2.0"
   resolved "https://registry.yarnpkg.com/@types/events/-/events-1.2.0.tgz#81a6731ce4df43619e5c8c945383b3e62a89ea86"
