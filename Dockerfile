@@ -1,26 +1,33 @@
-FROM node:8.12-alpine as build
+FROM node:8.12-alpine as base
+
+RUN apk update && \
+    apk upgrade && \
+    apk add git libgit2-dev && \
+    apk add python tzdata pkgconfig build-base
+
+FROM base as build
 
 WORKDIR /workspace
+
+COPY package.json .
+COPY yarn.lock .
+RUN yarn install
 
 COPY ./ ./
 
-RUN npm install -g yarn
-RUN yarn install
 RUN yarn run prod:build
 
-FROM node:8.12-alpine
+FROM base as release
 
 WORKDIR /workspace
-
-RUN npm install -g yarn
-
 COPY --from=build /workspace/package.json ./
 COPY --from=build /workspace/yarn.lock ./
+RUN yarn install --production=true
+
 COPY --from=build /workspace/public ./public
 COPY --from=build /workspace/build ./build
 COPY --from=build /workspace/config ./config
 
-RUN yarn install --production=true
 
-EXPOSE 3000
+EXPOSE 3010
 ENTRYPOINT [ "yarn", "run", "prod:run" ]

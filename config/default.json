@@ -7,5 +7,5 @@
         "ConnectionType":"socket",
         "Socket" : "/var/run/docker.sock"
     },
-    "Port": 3001
+    "Port": 3010
 }
