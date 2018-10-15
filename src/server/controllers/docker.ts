@@ -86,7 +86,13 @@ router.post("/run", async (req: Request, res: Response) => {
     try {
         const docker = new DockerHelper(connectionSettings);
         const socketManager = Dependencies().SocketManager;
-        const gitMinioSync = new GitMinioSync("localhost", 9000, minioAccessKey, minioSecretKey,
+        let minioAddress = "localhost";
+        if (connectionSettings.Type === "dockerwindows" || connectionSettings.Type === "dockermac") {
+            minioAddress = "localhost";
+        } else if (connectionSettings.Type === "docker") {
+            minioAddress = "host.docker.internal";
+        }
+        const gitMinioSync = new GitMinioSync(minioAddress, 9000, minioAccessKey, minioSecretKey,
             bucketName, sampleContentUrl);
         const containersToRun = Object.assign(containers, {});
         // Make sure that after minio is installed, we sync contents into the repository

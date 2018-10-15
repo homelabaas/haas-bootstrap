@@ -4,8 +4,8 @@
     "description": "Starter kit for a typescript full stack solution.",
     "main": "build/server/server.js",
     "scripts": {
-        "prod:build:client": "cross-env NODE_ENV=production ./node_modules/.bin/webpack --config ./src/webpack/webpack.config.prod.js",
-        "prod:build:server": "cross-env NODE_ENV=production tsc -p ./src/server",
+        "prod:build:client": "./node_modules/.bin/webpack --config ./src/webpack/webpack.config.prod.js",
+        "prod:build:server": "tsc -p ./src/server",
         "prod:build": "rimraf build && yarn run prod:build:server && yarn run prod:build:client",
         "prod:run": "cross-env NODE_ENV=production node build/server/server.js",
         "dependencies": "yarn",

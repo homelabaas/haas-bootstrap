@@ -21,21 +21,21 @@ const deploymentOptions: IDeploymentOption[] = [
         ExtendedDescription:
             "When are running this app using Docker for Mac/Windows. This is the standard way to deploy."
     },
-    {
-        Id: "dockertarget",
-        Description: "Another Docker Machine",
-        ExtendedDescription: "When have another Docker machine, whose API is available over the network."
-    },
-    {
-        Id: "compose",
-        Description: "Docker Compose File",
-        ExtendedDescription: "This will give you a sample docker-compose.yml file to use yourself with docker compose."
-    }
+    // {
+    //     Id: "dockertarget",
+    //     Description: "Another Docker Machine",
+    //     ExtendedDescription: "When have another Docker machine, whose API is available over the network."
+    // },
+    // {
+    //     Id: "compose",
+    //     Description: "Docker Compose File",
+    //     ExtendedDescription: "This will give you a sample docker-compose.yml file to use yourself with docker compose."
+    // }
 ];
 
 router.get("/", async (req: Request, res: Response) => {
     try {
-        let defaultTarget = "dockertarget";
+        let defaultTarget = "docker";
         if (process.platform === "win32") {
             defaultTarget = "dockerwindows";
         } else if (process.platform === "darwin") {
