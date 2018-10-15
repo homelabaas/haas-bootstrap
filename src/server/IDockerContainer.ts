@@ -3,4 +3,5 @@ export interface IDockerContainer {
     EnvironmentVars: Array<{ key: string, value: string}>;
     PortMapping: Array<{ host: number, container: number}>;
     Command?: string[];
+    PostInstallRun?: () => Promise<void>;
 }

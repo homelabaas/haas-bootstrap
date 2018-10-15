@@ -1,18 +1,13 @@
 import * as React from "react";
 import { hot } from "react-hot-loader";
 import * as api from "../../api";
-import { Progress, Button } from "semantic-ui-react";
+import { Button, Icon } from "semantic-ui-react";
 import { MessageDisplay } from "../common/MessageDisplay";
 import { Sockets } from "../../socket";
-import { IContainerPullInfo } from "../../../common/models/IContainerPullInfo";
-
-interface IContainerProgess {
-    Container: string;
-    Progress: number;
-}
+import { ITaskUpdate } from "../../../common/models/ITaskUpdate";
 
 interface ISecondStepState {
-    ContainerProgress: IContainerProgess[];
+    ContainerProgress: ITaskUpdate[];
     DisplayProgressBars: boolean;
     connectMessageSuccess?: boolean;
     connectMessage: string;
@@ -20,7 +15,6 @@ interface ISecondStepState {
 }
 
 interface IPropData {
-    Enabled: boolean;
     onReadyNextStep: () => void;
 }
 
@@ -36,23 +30,19 @@ class SecondStepComponent extends React.Component<IPropData, ISecondStepState> {
         };
     }
 
-    // Call this when this step is finished
-    public FinishStepTwp = async () => {
-        this.props.onReadyNextStep();
-    }
-
-    public receivePullUpdate = async (data: IContainerPullInfo) => {
-        const existingContainerProgress = this.state.ContainerProgress.find((p) => p.Container === data.container);
+    public receivePullUpdate = async (data: ITaskUpdate) => {
+        const existingContainerProgress = this.state.ContainerProgress.find((p) => p.Name === data.Name);
         if (existingContainerProgress === undefined) {
             const newContainerProgress =  Object.assign(this.state.ContainerProgress, {});
-            newContainerProgress.push({ Container: data.container, Progress: data.percent});
+            newContainerProgress.push(data);
             this.setState({
                 ContainerProgress: newContainerProgress
             });
         } else {
             const newContainerProgress =  Object.assign(this.state.ContainerProgress, {});
-            newContainerProgress.find((p) => p.Container === data.container).Progress = data.percent;
-            if (newContainerProgress.filter((p) => p.Progress === 100).length === newContainerProgress.length) {
+            newContainerProgress.find((p) => p.Name === data.Name).InProgress = data.InProgress;
+            newContainerProgress.find((p) => p.Name === data.Name).IsFinished = data.IsFinished;
+            if (newContainerProgress.filter((p) => p.IsFinished).length === newContainerProgress.length) {
                 this.props.onReadyNextStep();
             }
             this.setState({
@@ -74,13 +64,21 @@ class SecondStepComponent extends React.Component<IPropData, ISecondStepState> {
 
     public render() {
         const progressRows = this.state.ContainerProgress.map((p) => {
-            return <Progress key={p.Container} percent={p.Progress}>{p.Container}</Progress>;
+            return <div>{p.Description}
+                { p.InProgress &&
+                    <Icon loading name="spinner" />
+                }
+                { p.IsFinished &&
+                    <Icon name="check" />
+                }
+            </div>;
         });
         return (
           <div className="row">
             <h2>Step 2 - Download Docker Containers</h2>
             <Button onClick={this.handleGo} disabled={this.state.Disabled}>Go!</Button>
             <MessageDisplay messageSuccess={this.state.connectMessageSuccess} message={this.state.connectMessage} />
+            <p></p>
             {progressRows}
           </div>
        );

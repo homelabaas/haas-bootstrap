@@ -1,6 +1,5 @@
 import * as socketio from "socket.io-client";
-import { IContainerPullInfo } from "./../common/models/IContainerPullInfo";
-import { IContainerRunInfo } from "./../common/models/IContainerRunInfo";
+import { ITaskUpdate } from "../common/models/ITaskUpdate";
 import { ContainerPullUpdate, ContainerRunUpdate } from "./../common/socketEventDefinitions";
 
 class SocketManager {
@@ -10,7 +9,7 @@ class SocketManager {
         this.Connection = socketio.connect();
     }
 
-    public startContainerPullUpdateReceive = (receiveFunction: (data: IContainerPullInfo) => void) => {
+    public startContainerPullUpdateReceive = (receiveFunction: (data: ITaskUpdate) => void) => {
         this.Connection.on(ContainerPullUpdate, receiveFunction);
     }
 
@@ -18,7 +17,7 @@ class SocketManager {
         this.Connection.off(ContainerPullUpdate);
     }
 
-    public startContainerRunUpdateReceive = (receiveFunction: (data: IContainerRunInfo) => void) => {
+    public startContainerRunUpdateReceive = (receiveFunction: (data: ITaskUpdate) => void) => {
         this.Connection.on(ContainerRunUpdate, receiveFunction);
     }
 

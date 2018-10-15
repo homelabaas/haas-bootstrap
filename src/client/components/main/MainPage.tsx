@@ -71,12 +71,12 @@ class MainPageComponent extends React.Component<{}, IScreenState> {
                     Enabled={this.state.FirstStepEnabled} />
                 <br />
                 { this.state.WizardStage >= 1 &&
-                    <SecondStepPage Enabled={this.state.SecondStepEnabled}
+                    <SecondStepPage
                         onReadyNextStep={this.onReadySecondStep} />
                 }
                 <br />
                 { this.state.WizardStage >= 2 &&
-                    <ThirdStepPage Enabled={this.state.SecondStepEnabled}
+                    <ThirdStepPage
                     onReadyNextStep={this.onReadyThirdStep} />
                 }
                 <br />

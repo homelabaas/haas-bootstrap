@@ -3,12 +3,17 @@ import { IConnectRequest } from "../../common/models/IConnectRequest";
 import { IConnectResponse } from "../../common/models/IConnectResponse";
 import { Dependencies } from "../dependencyManager";
 import { DockerHelper } from "../dockerHelper";
+import { GitMinioSync } from "../gitMinioSync";
 import { IDockerContainer } from "../IDockerContainer";
 
 const router: Router = Router();
 
 const localSocket = "/var/run/docker.sock";
 const windowsSocket = "//./pipe/docker_engine";
+const minioAccessKey = "testaccesskey";
+const minioSecretKey = "testsecretkey";
+const bucketName = "builds";
+const sampleContentUrl = "https://github.com/homelabaas/haas-content.git";
 
 const containers: IDockerContainer[] = [
     {
@@ -31,11 +36,11 @@ const containers: IDockerContainer[] = [
         EnvironmentVars: [
             {
                 key: "MINIO_ACCESS_KEY",
-                value: "testaccesskey"
+                value: minioAccessKey
             },
             {
                 key: "MINIO_SECRET_KEY",
-                value: "testsecretkey"
+                value: minioSecretKey
             }
         ],
         PortMapping: [
@@ -78,15 +83,28 @@ router.get("/composefile", async (req: Request, res: Response) => {
 });
 
 router.post("/run", async (req: Request, res: Response) => {
-    const docker = new DockerHelper(connectionSettings);
-    const socketManager = Dependencies().SocketManager;
-    docker.RunContainers(containers, socketManager.SendContainerRunUpdate);
+    try {
+        const docker = new DockerHelper(connectionSettings);
+        const socketManager = Dependencies().SocketManager;
+        const gitMinioSync = new GitMinioSync("localhost", 9000, minioAccessKey, minioSecretKey,
+            bucketName, sampleContentUrl);
+        const containersToRun = Object.assign(containers, {});
+        // Make sure that after minio is installed, we sync contents into the repository
+        containersToRun.find((p) => p.Container === "minio/minio").PostInstallRun = gitMinioSync.SyncRepository;
+        setImmediate(async () => { await docker.RunContainers(containers, socketManager.SendContainerRunUpdate); });
+        res.json({ Success: true });
+    } catch (err) {
+        console.log("Error while trying to run containers.");
+        console.log(err);
+        res.json({ Success: false, Message: err.message });
+    }
 });
 
 router.post("/pull", async (req: Request, res: Response) => {
     const docker = new DockerHelper(connectionSettings);
     const socketManager = Dependencies().SocketManager;
-    docker.PullContainers(containers, socketManager.SendContainerPullUpdate);
+    setImmediate(async () => { await docker.PullContainers(containers, socketManager.SendContainerPullUpdate); });
+    res.json({ Success: true});
 });
 
 router.post("/connect", async (req: Request, res: Response) => {

@@ -1,5 +1,7 @@
+import * as sleep from "await-sleep";
 import * as Docker from "dockerode";
 import { IConnectRequest } from "../common/models/IConnectRequest";
+import { ITaskUpdate } from "../common/models/ITaskUpdate";
 import { IDockerContainer } from "./IDockerContainer";
 import { PullImage } from "./pullDockerImage";
 
@@ -37,6 +39,19 @@ export class DockerHelper {
         // Iterate through all the supplied containers and run Pull
         try {
             for (const container of containers) {
+                updateProgress({
+                    Name: container.Container,
+                    Description: "Running " + container.Container,
+                    InProgress: false,
+                    IsFinished: false
+                });
+            }
+            for (const container of containers) {
+                updateProgress({
+                    Name: container.Container,
+                    InProgress: true,
+                    IsFinished: false
+                });
                 const createOptions: Docker.ContainerCreateOptions = {
                     Image: container.Container + ":latest",
                     AttachStdin: false,
@@ -62,6 +77,15 @@ export class DockerHelper {
                 }
                 const containerInfo = await this.Docker.createContainer(createOptions);
                 await this.Docker.getContainer(containerInfo.id).start();
+                if (container.PostInstallRun) {
+                    await sleep(5000);
+                    await container.PostInstallRun();
+                }
+                updateProgress({
+                    Name: container.Container,
+                    InProgress: false,
+                    IsFinished: true
+                });
             }
         } catch (err) {
             console.log("Error");
@@ -69,15 +93,29 @@ export class DockerHelper {
         }
     }
 
-    public PullContainers = async (containers: IDockerContainer[], updateProgress: (progress: any) => void) => {
+    public PullContainers = async (containers: IDockerContainer[], updateProgress: (progress: ITaskUpdate) => void) => {
         // Iterate through all the supplied containers and run Pull
         try {
             for (const container of containers) {
-                updateProgress({container: container.Container, percent: 0});
+                updateProgress({
+                    Name: container.Container,
+                    Description: "Downloading " + container.Container,
+                    InProgress: false,
+                    IsFinished: false
+                });
             }
             for (const container of containers) {
+                updateProgress({
+                    Name: container.Container,
+                    InProgress: true,
+                    IsFinished: false
+                });
                 await PullImage(container.Container, this.Socket);
-                updateProgress({container: container.Container, percent: 100});
+                updateProgress({
+                    Name: container.Container,
+                    InProgress: false,
+                    IsFinished: true
+                });
             }
         } catch (err) {
             console.log("Error");
