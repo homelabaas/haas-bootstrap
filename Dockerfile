@@ -1,4 +1,8 @@
-FROM node:8.12 as base
+FROM node:8.12-alpine as base
+
+RUN apk update && \
+    apk upgrade && \
+    apk --no-cache add git
 
 FROM base as build
 

@@ -1,6 +1,5 @@
 import * as fs from "fs";
 import { Client } from "minio";
-import * as Git from "nodegit";
 import * as path from "path";
 import * as tmp from "tmp";
 
@@ -30,7 +29,8 @@ export class GitMinioSync {
             await this.MinioClient.makeBucket(this.BucketName, "us-east-1");
         }
         const tempDirectory = tmp.dirSync();
-        await Git.Clone.clone(this.RepositoryUrl, tempDirectory.name);
+        const git = require("simple-git/promise");
+        await git().clone(this.RepositoryUrl, tempDirectory.name);
         await this.CopyRecursiveSync(tempDirectory.name, "");
     }
 
