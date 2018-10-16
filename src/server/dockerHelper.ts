@@ -75,6 +75,14 @@ export class DockerHelper {
                 if (container.Command) {
                     createOptions.Cmd = container.Command;
                 }
+                createOptions.HostConfig.Binds = [];
+                if (container.VolumeMapping) {
+                    for (const volumeMapping of container.VolumeMapping) {
+                        createOptions.Volumes[volumeMapping.containerVolume] = {};
+                        createOptions.HostConfig.Binds
+                            .push(`${volumeMapping.containerVolume}:${volumeMapping.hostVolume}`);
+                    }
+                }
                 const containerInfo = await this.Docker.createContainer(createOptions);
                 await this.Docker.getContainer(containerInfo.id).start();
                 if (container.PostInstallRun) {

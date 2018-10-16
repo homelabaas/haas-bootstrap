@@ -64,6 +64,12 @@ const containers: IDockerContainer[] = [
                 container: 3000,
                 host: 3000
             }
+        ],
+        VolumeMapping: [
+            {
+                hostVolume: "/var/run/docker.sock",
+                containerVolume: "/var/run/docker.sock"
+            }
         ]
     }
 ];
