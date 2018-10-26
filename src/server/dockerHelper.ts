@@ -76,6 +76,7 @@ export class DockerHelper {
                     createOptions.Cmd = container.Command;
                 }
                 createOptions.HostConfig.Binds = [];
+                createOptions.Volumes = {};
                 if (container.VolumeMapping) {
                     for (const volumeMapping of container.VolumeMapping) {
                         createOptions.Volumes[volumeMapping.containerVolume] = {};
