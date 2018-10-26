@@ -1,22 +1,28 @@
 import * as React from "react";
 import { hot } from "react-hot-loader";
 import * as api from "../../api";
-import { Dropdown, Button } from "semantic-ui-react";
+import { Dropdown, Button, Input } from "semantic-ui-react";
 import { MessageDisplay } from "../common/MessageDisplay";
 import { IDropdownSelection } from "../IDropdownSelection";
 import { IConnectRequest } from "../../../common/models/IConnectRequest";
 import { IConnectResponse } from "../../../common/models/IConnectResponse";
+import { IDeploymentTarget } from "../IDeploymentTarget";
+import { IDeployment } from "../../../common/models/IDeployment";
+import { ThirdStepPage } from "./ThirdStep";
 
 interface IFirstStepState {
-    DeploymentTargetDropdown: IDropdownSelection[];
+    deploymentTargetDropdown: IDropdownSelection[];
+    deploymentTargetType: string;
     connectMessageSuccess?: boolean;
     connectMessage: string;
+    targetAddress: string;
+    addressRequired: boolean;
+    deploymentOptions: IDeployment;
 }
 
 interface IPropData {
-    DeploymentTarget: string;
     Enabled: boolean;
-    onChangeDeploymentTarget: (target: string) => void;
+    onChangeDeploymentTarget: (target: IDeploymentTarget) => void;
     onReadyNextStep: () => void;
 }
 
@@ -24,15 +30,19 @@ class FirstStepComponent extends React.Component<IPropData, IFirstStepState> {
     constructor(props: any) {
         super(props);
         this.state = {
-            DeploymentTargetDropdown: [],
+            deploymentTargetDropdown: [],
+            deploymentTargetType: "",
             connectMessage: "",
-            connectMessageSuccess: null
+            connectMessageSuccess: null,
+            targetAddress: "",
+            addressRequired: false,
+            deploymentOptions: { default: "", Options: [] }
         };
     }
 
     public async componentDidMount() {
         const deployment = await api.getOptions();
-        const deploymentTargetDropdown = deployment.Options.map((p) => {
+        const deploymentTargetDropdownValues = deployment.Options.map((p) => {
             return {
                 key: p.Id.toString(),
                 value: p.Id.toString(),
@@ -42,21 +52,38 @@ class FirstStepComponent extends React.Component<IPropData, IFirstStepState> {
 
         if (deployment) {
             this.setState({
-                DeploymentTargetDropdown: deploymentTargetDropdown
+                deploymentTargetDropdown: deploymentTargetDropdownValues,
+                deploymentOptions: deployment,
+                deploymentTargetType: deployment.default
             });
-            this.props.onChangeDeploymentTarget(deployment.default);
+            this.props.onChangeDeploymentTarget({ type: deployment.default });
         }
     }
 
     public handleTargetChange = async (event: any, data: any) => {
-        const deploymentTarget = data.value;
+        const deploymentTarget: IDeploymentTarget =  { type: data.value };
+        let addressRequiredNewVal = false;
+        for (const targetOption of this.state.deploymentOptions.Options) {
+            if (targetOption.Id === data.value) {
+                if (targetOption.RequiresTargetInfo === true) {
+                    addressRequiredNewVal = true;
+                }
+            }
+        }
+        this.setState({
+            deploymentTargetType: data.value,
+            addressRequired: addressRequiredNewVal
+        });
         this.props.onChangeDeploymentTarget(deploymentTarget);
     }
 
     public handleConnect = async () => {
         const connectRequest: IConnectRequest = {
-            Type: this.props.DeploymentTarget
+            Type: this.state.deploymentTargetType
         };
+        if (this.state.addressRequired) {
+            connectRequest.Address = this.state.targetAddress;
+        }
         const connectResponse = await api.connectToDocker(connectRequest);
         this.setState({
             connectMessage: connectResponse.Message,
@@ -67,15 +94,32 @@ class FirstStepComponent extends React.Component<IPropData, IFirstStepState> {
         }
     }
 
+    public handleAddressChange = async (event: any, data: any) => {
+        const deploymentTarget: IDeploymentTarget =  { type: data.value };
+        if (this.state.addressRequired) {
+            deploymentTarget.address = this.state.targetAddress;
+        }
+        this.setState({
+            targetAddress: data.value
+        });
+        this.props.onChangeDeploymentTarget(deploymentTarget);
+    }
+
     public render() {
         return (
           <div className="row">
             <h2>Step 1 - Connect to Docker</h2>
-            <h4>Select your environment:</h4>
-            <Dropdown fluid selection value={this.props.DeploymentTarget}
-                                    options={this.state.DeploymentTargetDropdown} placeholder="Select"
+            <h4>Select installation environment:</h4>
+            <Dropdown fluid selection value={this.state.deploymentTargetType}
+                                    options={this.state.deploymentTargetDropdown} placeholder="Select"
                                     onChange={this.handleTargetChange} />
             <br />
+            { this.state.addressRequired &&
+                <>
+                    <Input placeholder="Address" onChange={this.handleAddressChange} value={this.state.targetAddress} />
+                    < br />< br />
+                </>
+            }
             <Button onClick={this.handleConnect} >Connect</Button>
             <MessageDisplay messageSuccess={this.state.connectMessageSuccess} message={this.state.connectMessage} />
           </div>

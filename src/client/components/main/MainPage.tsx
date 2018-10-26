@@ -10,10 +10,11 @@ import { FirstStepPage } from "./FirstStep";
 import { SecondStepPage } from "./SecondStep";
 import { ThirdStepPage } from "./ThirdStep";
 import { FourthStepPage } from "./FourthStep";
+import { IDeploymentTarget } from "../IDeploymentTarget";
 
 interface IScreenState {
     WizardStage: number;
-    DeploymentTarget: string;
+    DeploymentTarget: IDeploymentTarget;
     FirstStepEnabled: boolean;
     SecondStepEnabled: boolean;
     ThirdStepEnabled: boolean;
@@ -24,7 +25,9 @@ class MainPageComponent extends React.Component<{}, IScreenState> {
         super(props);
         this.state = {
             WizardStage: 0,
-            DeploymentTarget: "",
+            DeploymentTarget: {
+                type: ""
+            },
             FirstStepEnabled: true,
             SecondStepEnabled: true,
             ThirdStepEnabled: true
@@ -35,7 +38,7 @@ class MainPageComponent extends React.Component<{}, IScreenState> {
         //
     }
 
-    public onChangeDeploymentTarget = (target: string): void => {
+    public onChangeDeploymentTarget = (target: IDeploymentTarget): void => {
         this.setState({
             DeploymentTarget: target
         });
@@ -65,7 +68,7 @@ class MainPageComponent extends React.Component<{}, IScreenState> {
     public render() {
         return (
             <>
-                <FirstStepPage DeploymentTarget={this.state.DeploymentTarget}
+                <FirstStepPage
                     onChangeDeploymentTarget={this.onChangeDeploymentTarget}
                     onReadyNextStep={this.onReadyFirstStep}
                     Enabled={this.state.FirstStepEnabled} />
