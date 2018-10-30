@@ -61,7 +61,6 @@ class FirstStepComponent extends React.Component<IPropData, IFirstStepState> {
     }
 
     public handleTargetChange = async (event: any, data: any) => {
-        const deploymentTarget: IDeploymentTarget =  { type: data.value };
         let addressRequiredNewVal = false;
         for (const targetOption of this.state.deploymentOptions.Options) {
             if (targetOption.Id === data.value) {
@@ -74,7 +73,7 @@ class FirstStepComponent extends React.Component<IPropData, IFirstStepState> {
             deploymentTargetType: data.value,
             addressRequired: addressRequiredNewVal
         });
-        this.props.onChangeDeploymentTarget(deploymentTarget);
+        this.props.onChangeDeploymentTarget({ type: data.value, address: this.state.targetAddress });
     }
 
     public handleConnect = async () => {
@@ -95,14 +94,10 @@ class FirstStepComponent extends React.Component<IPropData, IFirstStepState> {
     }
 
     public handleAddressChange = async (event: any, data: any) => {
-        const deploymentTarget: IDeploymentTarget =  { type: data.value };
-        if (this.state.addressRequired) {
-            deploymentTarget.address = this.state.targetAddress;
-        }
         this.setState({
             targetAddress: data.value
         });
-        this.props.onChangeDeploymentTarget(deploymentTarget);
+        this.props.onChangeDeploymentTarget({type: this.state.deploymentTargetType, address: data.value });
     }
 
     public render() {

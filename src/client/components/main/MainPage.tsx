@@ -11,13 +11,14 @@ import { SecondStepPage } from "./SecondStep";
 import { ThirdStepPage } from "./ThirdStep";
 import { FourthStepPage } from "./FourthStep";
 import { IDeploymentTarget } from "../IDeploymentTarget";
+import * as URL from "url";
 
 interface IScreenState {
     WizardStage: number;
-    DeploymentTarget: IDeploymentTarget;
     FirstStepEnabled: boolean;
     SecondStepEnabled: boolean;
     ThirdStepEnabled: boolean;
+    FinalAddress: string;
 }
 
 class MainPageComponent extends React.Component<{}, IScreenState> {
@@ -25,12 +26,10 @@ class MainPageComponent extends React.Component<{}, IScreenState> {
         super(props);
         this.state = {
             WizardStage: 0,
-            DeploymentTarget: {
-                type: ""
-            },
             FirstStepEnabled: true,
             SecondStepEnabled: true,
-            ThirdStepEnabled: true
+            ThirdStepEnabled: true,
+            FinalAddress: ""
         };
     }
 
@@ -39,9 +38,16 @@ class MainPageComponent extends React.Component<{}, IScreenState> {
     }
 
     public onChangeDeploymentTarget = (target: IDeploymentTarget): void => {
-        this.setState({
-            DeploymentTarget: target
-        });
+        if (target.type === "dockertarget") {
+            const hostname = URL.parse(target.address).hostname;
+            this.setState({
+                FinalAddress: hostname
+            });
+        } else {
+            this.setState({
+                FinalAddress: "localhost"
+            });
+        }
     }
 
     public onReadyFirstStep = () => {
@@ -74,17 +80,15 @@ class MainPageComponent extends React.Component<{}, IScreenState> {
                     Enabled={this.state.FirstStepEnabled} />
                 <br />
                 { this.state.WizardStage >= 1 &&
-                    <SecondStepPage
-                        onReadyNextStep={this.onReadySecondStep} />
+                    <SecondStepPage onReadyNextStep={this.onReadySecondStep} />
                 }
                 <br />
                 { this.state.WizardStage >= 2 &&
-                    <ThirdStepPage
-                    onReadyNextStep={this.onReadyThirdStep} />
+                    <ThirdStepPage onReadyNextStep={this.onReadyThirdStep} />
                 }
                 <br />
                 { this.state.WizardStage >= 3 &&
-                    <FourthStepPage />
+                    <FourthStepPage address={this.state.FinalAddress} />
                 }
             </>
         );

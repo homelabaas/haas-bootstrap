@@ -3,7 +3,7 @@ import { Client } from "minio";
 import * as path from "path";
 import * as tmp from "tmp";
 
-const excludeFiles = [ "/.git", "/LICENSE", "/readme.md" ];
+const excludeFiles = [ "/.git", "/LICENSE", "/readme.md", "/.editorconfig" ];
 
 export class GitMinioSync {
     public MinioClient: Client;

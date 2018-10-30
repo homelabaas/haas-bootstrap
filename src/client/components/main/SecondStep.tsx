@@ -64,7 +64,7 @@ class SecondStepComponent extends React.Component<IPropData, ISecondStepState> {
 
     public render() {
         const progressRows = this.state.ContainerProgress.map((p) => {
-            return <div>{p.Description}
+            return <div key={p.Name}>{p.Description}
                 { p.InProgress &&
                     <Icon loading name="spinner" />
                 }

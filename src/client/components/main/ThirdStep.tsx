@@ -63,7 +63,7 @@ class ThirdStepComponent extends React.Component<IPropData, IThirdStepState> {
 
     public render() {
         const progressRows = this.state.ContainerProgress.map((p) => {
-            return <div>{p.Description}
+            return <div key={p.Name}>{p.Description}
                 { p.InProgress &&
                     <Icon loading name="spinner" />
                 }
