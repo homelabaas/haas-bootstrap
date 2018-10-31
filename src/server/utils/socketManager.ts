@@ -1,7 +1,7 @@
 import * as http from "http";
 import * as socketio from "socket.io";
-import { ITaskUpdate } from "../common/models/ITaskUpdate";
-import { ContainerPullUpdate, ContainerRunUpdate } from "./../common/socketEventDefinitions";
+import { ITaskUpdate } from "../../common/models/ITaskUpdate";
+import { ContainerPullUpdate, ContainerRunUpdate } from "../../common/socketEventDefinitions";
 
 export class SocketManager {
     public io: socketio.Server;

@@ -3,9 +3,9 @@ import * as URL from "url";
 import { IConnectRequest } from "../../common/models/IConnectRequest";
 import { IConnectResponse } from "../../common/models/IConnectResponse";
 import { Dependencies } from "../dependencyManager";
-import { DockerHelper } from "../dockerHelper";
-import { GitMinioSync } from "../gitMinioSync";
-import { IDockerContainer } from "../IDockerContainer";
+import { DockerHelper } from "../utils/dockerHelper";
+import { GitMinioSync } from "../utils/gitMinioSync";
+import { IDockerContainer } from "../utils/IDockerContainer";
 
 const router: Router = Router();
 

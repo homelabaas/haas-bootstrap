@@ -1,8 +1,8 @@
 import * as sleep from "await-sleep";
 import * as Docker from "dockerode";
 import * as URL from "url";
-import { IConnectRequest } from "../common/models/IConnectRequest";
-import { ITaskUpdate } from "../common/models/ITaskUpdate";
+import { IConnectRequest } from "../../common/models/IConnectRequest";
+import { ITaskUpdate } from "../../common/models/ITaskUpdate";
 import { IDockerContainer } from "./IDockerContainer";
 import { PullImageByAddress, PullImageBySocket } from "./pullDockerImage";
 
