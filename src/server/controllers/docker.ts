@@ -3,9 +3,9 @@ import * as URL from "url";
 import { IConnectRequest } from "../../common/models/IConnectRequest";
 import { IConnectResponse } from "../../common/models/IConnectResponse";
 import { Dependencies } from "../dependencyManager";
+import { getContainerDefinitions } from "../utils/containerDefinitions";
 import { DockerHelper } from "../utils/dockerHelper";
 import { GitMinioSync } from "../utils/gitMinioSync";
-import { IDockerContainer } from "../utils/IDockerContainer";
 
 const router: Router = Router();
 
@@ -15,82 +15,7 @@ const minioAccessKey = "testaccesskey";
 const minioSecretKey = "testsecretkey";
 const bucketName = "builds";
 const sampleContentUrl = "https://github.com/homelabaas/haas-content.git";
-
-const getContainerDefinitions = (postgresAddress: string): IDockerContainer[] => {
-    return [
-            {
-                Container: "postgres",
-                EnvironmentVars: [
-                    {
-                        key: "POSTGRES_PASSWORD",
-                        value: "devpostgrespwd"
-                    }
-                ],
-                PortMapping: [
-                    {
-                        container: 5432,
-                        host: 5432
-                    }
-                ]
-            },
-            {
-                Container: "minio/minio",
-                EnvironmentVars: [
-                    {
-                        key: "MINIO_ACCESS_KEY",
-                        value: minioAccessKey
-                    },
-                    {
-                        key: "MINIO_SECRET_KEY",
-                        value: minioSecretKey
-                    }
-                ],
-                PortMapping: [
-                    {
-                        container: 9000,
-                        host: 9000
-                    }
-                ],
-                Command: ["server", "/data"]
-            },
-            {
-                Container: "homelabaas/haas-application",
-                EnvironmentVars: [
-                    {
-                        key: "NODE_CONFIG",
-                        value : "{\"Database\":{ \"ConnectionString\":\"postgres://postgres:devpostgrespwd@"
-                            + postgresAddress + ":5432/\"}}"
-                    }
-                ],
-                PortMapping: [
-                    {
-                        container: 3000,
-                        host: 3000
-                    }
-                ],
-                VolumeMapping: [
-                    {
-                        hostVolume: "/var/run/docker.sock",
-                        containerVolume: "/var/run/docker.sock"
-                    }
-                ]
-            }
-        ];
-};
-
 let connectionSettings: IConnectRequest = null;
-
-router.get("/", async (req: Request, res: Response) => {
-    try {
-        res.json({});
-    } catch (err) {
-        res.json({ message: err.message, success: false });
-    }
-});
-
-router.get("/composefile", async (req: Request, res: Response) => {
-    // Return a sample compose file here to download
-});
 
 router.post("/run", async (req: Request, res: Response) => {
     try {
@@ -111,9 +36,10 @@ router.post("/run", async (req: Request, res: Response) => {
         }
         const gitMinioSync = new GitMinioSync(minioAddress, 9000, minioAccessKey, minioSecretKey,
             bucketName, sampleContentUrl);
-        const containersToRun = Object.assign(getContainerDefinitions(postgresAddress), {});
+        const containersToRun = Object.assign(getContainerDefinitions(postgresAddress, minioAccessKey, minioSecretKey),
+            {});
         // Make sure that after minio is installed, we sync contents into the repository
-        containersToRun.find((p) => p.Container === "minio/minio").PostInstallRun = gitMinioSync.SyncRepository;
+        containersToRun.find((p) => p.Name === "haas_minio").PostInstallRun = gitMinioSync.SyncRepository;
         setImmediate(async () => { await docker.RunContainers(containersToRun,
                 socketManager.SendContainerRunUpdate); });
         res.json({ Success: true });
@@ -127,7 +53,7 @@ router.post("/run", async (req: Request, res: Response) => {
 router.post("/pull", async (req: Request, res: Response) => {
     const docker = new DockerHelper(connectionSettings);
     const socketManager = Dependencies().SocketManager;
-    setImmediate(async () => { await docker.PullContainers(getContainerDefinitions(""),
+    setImmediate(async () => { await docker.PullContainers(getContainerDefinitions("", minioAccessKey, minioSecretKey),
         socketManager.SendContainerPullUpdate); });
     res.json({ Success: true});
 });

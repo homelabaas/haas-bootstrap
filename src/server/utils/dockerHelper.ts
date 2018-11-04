@@ -67,6 +67,7 @@ export class DockerHelper {
                 });
                 const createOptions: Docker.ContainerCreateOptions = {
                     Image: container.Container + ":latest",
+                    name: container.Name,
                     AttachStdin: false,
                     AttachStdout: false,
                     AttachStderr: false,
