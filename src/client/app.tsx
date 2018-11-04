@@ -12,7 +12,6 @@ const AppComponent: React.StatelessComponent<{}> = (props) => {
             <Container text style={{ marginTop: "7em" }}>
                 {props.children}
             </Container>
-            <Footer />
         </div>
     );
 };

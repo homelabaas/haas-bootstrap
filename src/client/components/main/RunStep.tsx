@@ -10,14 +10,15 @@ interface IThirdStepState {
     DisplayProgressBars: boolean;
     connectMessageSuccess?: boolean;
     connectMessage: string;
-    Disabled: boolean;
+    Enabled: boolean;
 }
 
 interface IPropData {
+    Enabled: boolean;
     onReadyNextStep: () => void;
 }
 
-class ThirdStepComponent extends React.Component<IPropData, IThirdStepState> {
+class RunStepComponent extends React.Component<IPropData, IThirdStepState> {
     constructor(props: any) {
         super(props);
         this.state = {
@@ -25,7 +26,7 @@ class ThirdStepComponent extends React.Component<IPropData, IThirdStepState> {
             DisplayProgressBars: false,
             connectMessage: "",
             connectMessageSuccess: null,
-            Disabled: false
+            Enabled: true
         };
     }
 
@@ -52,7 +53,7 @@ class ThirdStepComponent extends React.Component<IPropData, IThirdStepState> {
 
     public handleGo = async () => {
         this.setState({
-            Disabled: true
+            Enabled: false
         });
         Sockets().startContainerRunUpdateReceive(this.receiveRunUpdate);
         const returnVal = await api.runDockerContainers();
@@ -72,10 +73,11 @@ class ThirdStepComponent extends React.Component<IPropData, IThirdStepState> {
                 }
             </div>;
         });
+        const enabled = this.state.Enabled && this.props.Enabled;
         return (
           <div className="row">
-            <h2>Step 3 - Run Docker Containers</h2>
-            <Button onClick={this.handleGo} disabled={this.state.Disabled}>Go!</Button>
+            <h2>Start Docker Containers</h2>
+            <Button onClick={this.handleGo} disabled={!enabled}>Go!</Button>
             <p></p>
             {progressRows}
           </div>
@@ -83,4 +85,4 @@ class ThirdStepComponent extends React.Component<IPropData, IThirdStepState> {
     }
 }
 
-export const ThirdStepPage = hot(module)(ThirdStepComponent);
+export const RunStep = hot(module)(RunStepComponent);

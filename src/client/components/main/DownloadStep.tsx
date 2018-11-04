@@ -11,14 +11,15 @@ interface ISecondStepState {
     DisplayProgressBars: boolean;
     connectMessageSuccess?: boolean;
     connectMessage: string;
-    Disabled: boolean;
+    Enabled: boolean;
 }
 
 interface IPropData {
+    Enabled: boolean;
     onReadyNextStep: () => void;
 }
 
-class SecondStepComponent extends React.Component<IPropData, ISecondStepState> {
+class DownloadStepComponent extends React.Component<IPropData, ISecondStepState> {
     constructor(props: any) {
         super(props);
         this.state = {
@@ -26,7 +27,7 @@ class SecondStepComponent extends React.Component<IPropData, ISecondStepState> {
             DisplayProgressBars: false,
             connectMessage: "",
             connectMessageSuccess: null,
-            Disabled: false
+            Enabled: true
         };
     }
 
@@ -53,7 +54,7 @@ class SecondStepComponent extends React.Component<IPropData, ISecondStepState> {
 
     public handleGo = async () => {
         this.setState({
-            Disabled: true
+            Enabled: false
         });
         Sockets().startContainerPullUpdateReceive(this.receivePullUpdate);
         const returnVal = await api.pullDockerContainers();
@@ -73,10 +74,11 @@ class SecondStepComponent extends React.Component<IPropData, ISecondStepState> {
                 }
             </div>;
         });
+        const enabled = this.props.Enabled && this.state.Enabled;
         return (
           <div className="row">
-            <h2>Step 2 - Download Docker Containers</h2>
-            <Button onClick={this.handleGo} disabled={this.state.Disabled}>Go!</Button>
+            <h2>Download Docker Containers</h2>
+            <Button disabled={!enabled} onClick={this.handleGo}>Go!</Button>
             <MessageDisplay messageSuccess={this.state.connectMessageSuccess} message={this.state.connectMessage} />
             <p></p>
             {progressRows}
@@ -85,4 +87,4 @@ class SecondStepComponent extends React.Component<IPropData, ISecondStepState> {
     }
 }
 
-export const SecondStepPage = hot(module)(SecondStepComponent);
+export const DownloadStep = hot(module)(DownloadStepComponent);

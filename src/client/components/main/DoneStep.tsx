@@ -6,7 +6,7 @@ interface IPropData {
     address: string;
 }
 
-const FourthStepComponent: React.StatelessComponent<IPropData> = (props: any) => {
+const DoneStepComponent: React.StatelessComponent<IPropData> = (props: any) => {
     const address = props.address;
     const haasUrl = "http://" + address + ":3000";
     const minioUrl = "http://" + address + ":9000";
@@ -18,4 +18,4 @@ const FourthStepComponent: React.StatelessComponent<IPropData> = (props: any) =>
         </>;
 };
 
-export const FourthStepPage = hot(module)(FourthStepComponent);
+export const DoneStep = hot(module)(DoneStepComponent);

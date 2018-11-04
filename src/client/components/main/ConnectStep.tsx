@@ -1,14 +1,13 @@
 import * as React from "react";
 import { hot } from "react-hot-loader";
 import * as api from "../../api";
-import { Dropdown, Button, Input } from "semantic-ui-react";
+import { Dropdown, Button, Input, Form } from "semantic-ui-react";
 import { MessageDisplay } from "../common/MessageDisplay";
 import { IDropdownSelection } from "../IDropdownSelection";
 import { IConnectRequest } from "../../../common/models/IConnectRequest";
 import { IConnectResponse } from "../../../common/models/IConnectResponse";
 import { IDeploymentTarget } from "../IDeploymentTarget";
 import { IDeployment } from "../../../common/models/IDeployment";
-import { ThirdStepPage } from "./ThirdStep";
 
 interface IFirstStepState {
     deploymentTargetDropdown: IDropdownSelection[];
@@ -26,7 +25,7 @@ interface IPropData {
     onReadyNextStep: () => void;
 }
 
-class FirstStepComponent extends React.Component<IPropData, IFirstStepState> {
+class ConnectStepComponent extends React.Component<IPropData, IFirstStepState> {
     constructor(props: any) {
         super(props);
         this.state = {
@@ -103,23 +102,28 @@ class FirstStepComponent extends React.Component<IPropData, IFirstStepState> {
     public render() {
         return (
           <div className="row">
-            <h2>Step 1 - Connect to Docker</h2>
             <h4>Select installation environment:</h4>
-            <Dropdown fluid selection value={this.state.deploymentTargetType}
+            <Form>
+                <Form.Field>
+                    <label>Deployment Type</label>
+                    <Dropdown fluid selection value={this.state.deploymentTargetType}
                                     options={this.state.deploymentTargetDropdown} placeholder="Select"
-                                    onChange={this.handleTargetChange} />
-            <br />
-            { this.state.addressRequired &&
-                <>
-                    <Input placeholder="Address" onChange={this.handleAddressChange} value={this.state.targetAddress} />
-                    < br />< br />
-                </>
-            }
-            <Button onClick={this.handleConnect} >Connect</Button>
+                                    onChange={this.handleTargetChange}
+                                    disabled={!this.props.Enabled} />
+                </Form.Field>
+                { this.state.addressRequired &&
+                    <Form.Field>
+                        <label>URL of Docker Machine</label>
+                        <Input placeholder="Address" onChange={this.handleAddressChange}
+                            value={this.state.targetAddress} disabled={!this.props.Enabled}  />
+                    </Form.Field>
+                }
+                <Button onClick={this.handleConnect} disabled={!this.props.Enabled}>Connect</Button>
+            </Form>
             <MessageDisplay messageSuccess={this.state.connectMessageSuccess} message={this.state.connectMessage} />
           </div>
        );
     }
 }
 
-export const FirstStepPage = hot(module)(FirstStepComponent);
+export const ConnectStep = hot(module)(ConnectStepComponent);
