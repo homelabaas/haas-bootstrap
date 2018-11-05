@@ -25,6 +25,14 @@
                 "kind": "build",
                 "isDefault": true
             }
+        },
+        {
+            "type": "typescript",
+            "tsconfig": "src/server/tsconfig.json",
+            "label": "macbuild",
+            "problemMatcher": [
+                "$tsc"
+            ]
         }
     ]
 }
