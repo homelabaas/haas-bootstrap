@@ -8,6 +8,7 @@ import * as URL from "url";
 import { Button, Icon } from "semantic-ui-react";
 import { RunStep } from "./RunStep";
 import { MigrateStep } from "./MigrateStep";
+import { IMigrateRequest } from "../../../common/models/IMigrateRequest";
 
 interface IScreenState {
     WizardStage: WizardStage;
@@ -19,6 +20,7 @@ interface IScreenState {
     ShowRestartButton: boolean;
     FinalAddress: string;
     MigrateData: boolean;
+    MigrateSettings: IMigrateRequest;
 }
 
 enum WizardStage {
@@ -42,7 +44,8 @@ class MainPageComponent extends React.Component<{}, IScreenState> {
             MigrateStepEnabled: true,
             ShowRestartButton: false,
             FinalAddress: "",
-            MigrateData: false
+            MigrateData: false,
+            MigrateSettings: null
         };
     }
 
@@ -57,6 +60,12 @@ class MainPageComponent extends React.Component<{}, IScreenState> {
                 FinalAddress: "localhost"
             });
         }
+    }
+
+    public setMigrateSettings = (settings: IMigrateRequest) => {
+        this.setState({
+            MigrateSettings: settings
+        });
     }
 
     public onReadyConnectStep = () => {
@@ -109,6 +118,7 @@ class MainPageComponent extends React.Component<{}, IScreenState> {
             ConnectStepEnabled: true,
             DownloadStepEnabled: true,
             RunStepEnabled: true,
+            MigrateStepEnabled: true,
             ShowRestartButton: false,
             FinalAddress: "",
             MigrateData: false
@@ -162,13 +172,16 @@ class MainPageComponent extends React.Component<{}, IScreenState> {
                   this.state.WizardStage === WizardStage.Done)
                   && this.state.MigrateData) &&
                     <MigrateStep onReadyNextStep={this.onReadyMigrateStep}
-                        Enabled={this.state.MigrateStepEnabled}/>
+                        Enabled={this.state.MigrateStepEnabled}
+                        onSetMigrateSettings={this.setMigrateSettings} />
                 }
                 <br />
                 { (this.state.WizardStage === WizardStage.Run ||
                   this.state.WizardStage === WizardStage.Done) &&
                     <RunStep onReadyNextStep={this.onReadyRunStep}
-                        Enabled={this.state.RunStepEnabled}/>
+                        Enabled={this.state.RunStepEnabled}
+                        EnableMigrate={this.state.MigrateData}
+                        MigrateSettings={this.state.MigrateSettings} />
                 }
                 <br />
                 { this.state.WizardStage === WizardStage.Done &&

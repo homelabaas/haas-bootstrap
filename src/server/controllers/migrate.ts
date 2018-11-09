@@ -16,7 +16,7 @@ router.post("/", async (req: Request, res: Response) => {
             port: migrateRequest.port,
           });
         await pgClient.connect();
-        const result = await pgClient.query("SELECT * FROM VM");
+        const result = await pgClient.query("SELECT count(*) FROM \"VirtualMachine\"");
         const connectResponse: IConnectResponse = {
             Success: true,
             Message: "Successfully connected."

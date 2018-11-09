@@ -4,6 +4,7 @@ import * as api from "../../api";
 import { Dropdown, Button, Icon } from "semantic-ui-react";
 import { ITaskUpdate } from "../../../common/models/ITaskUpdate";
 import { Sockets } from "../../socket";
+import { IMigrateRequest } from "../../../common/models/IMigrateRequest";
 
 interface IThirdStepState {
     ContainerProgress: ITaskUpdate[];
@@ -16,6 +17,8 @@ interface IThirdStepState {
 interface IPropData {
     Enabled: boolean;
     onReadyNextStep: () => void;
+    MigrateSettings: IMigrateRequest;
+    EnableMigrate: boolean;
 }
 
 class RunStepComponent extends React.Component<IPropData, IThirdStepState> {
@@ -56,9 +59,16 @@ class RunStepComponent extends React.Component<IPropData, IThirdStepState> {
             Enabled: false
         });
         Sockets().startContainerRunUpdateReceive(this.receiveRunUpdate);
-        const returnVal = await api.runDockerContainers();
-        if (!returnVal.Success) {
-            Sockets().stopContainerRunUpdateReceive();
+        if (this.props.EnableMigrate) {
+            const returnVal = await api.runDockerContainers(this.props.MigrateSettings);
+            if (!returnVal.Success) {
+                Sockets().stopContainerRunUpdateReceive();
+            }
+        } else {
+            const returnVal = await api.runDockerContainers();
+            if (!returnVal.Success) {
+                Sockets().stopContainerRunUpdateReceive();
+            }
         }
     }
 

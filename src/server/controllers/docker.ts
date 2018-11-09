@@ -2,10 +2,12 @@ import { Request, Response, Router } from "express";
 import * as URL from "url";
 import { IConnectRequest } from "../../common/models/IConnectRequest";
 import { IConnectResponse } from "../../common/models/IConnectResponse";
+import { IMigrateRequest } from "../../common/models/IMigrateRequest";
 import { Dependencies } from "../dependencyManager";
 import { getContainerDefinitions } from "../utils/containerDefinitions";
 import { DockerHelper } from "../utils/dockerHelper";
 import { GitMinioSync } from "../utils/gitMinioSync";
+import { IPgsqlDb, Migrate } from "../utils/migratePgsql";
 
 const router: Router = Router();
 
@@ -40,6 +42,25 @@ router.post("/run", async (req: Request, res: Response) => {
             {});
         // Make sure that after minio is installed, we sync contents into the repository
         containersToRun.find((p) => p.Name === "haas_minio").PostInstallRun = gitMinioSync.SyncRepository;
+        if (req.body.address) {
+            const migrateRequest = req.body as IMigrateRequest;
+            const source: IPgsqlDb = {
+                address: migrateRequest.address,
+                db: migrateRequest.db,
+                port: migrateRequest.port,
+                user: migrateRequest.user,
+                password: migrateRequest.password
+            };
+            const target: IPgsqlDb = {
+                address: postgresAddress,
+                db: "homelabdevops",
+                port: 5432,
+                user: "postgres",
+                password: "devpostgrespwd"
+            };
+            containersToRun.find((p) => p.Name === "haas_postgres").PostInstallRun =
+                async () => { await Migrate(source, target); };
+        }
         setImmediate(async () => { await docker.RunContainers(containersToRun,
                 socketManager.SendContainerRunUpdate); });
         res.json({ Success: true });

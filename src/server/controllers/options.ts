@@ -30,11 +30,6 @@ const deploymentOptions: IDeploymentOption[] = [
         ExtendedDescription: "When have another Docker machine, whose API is available over the network.",
         RequiresTargetInfo: true
     },
-    // {
-    //     Id: "compose",
-    //     Description: "Docker Compose File",
-    //     ExtendedDescription: "This will give you a sample docker-compose.yml file to use yourself with docker compose."
-    // }
 ];
 
 router.get("/", async (req: Request, res: Response) => {
