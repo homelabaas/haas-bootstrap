@@ -21,6 +21,26 @@ export const getContainerDefinitions = (postgresAddress: string,
                 ]
             },
             {
+                Name: "haas_seq",
+                Container: "datalust/seq",
+                EnvironmentVars: [
+                    {
+                        key: "ACCEPT_EULA",
+                        value: "Y"
+                    }
+                ],
+                PortMapping: [
+                    {
+                        container: 5341,
+                        host: 5341
+                    },
+                    {
+                        container: 80,
+                        host: 8085
+                    }
+                ]
+            },
+            {
                 Name: "haas_minio",
                 Container: "minio/minio",
                 EnvironmentVars: [
@@ -48,7 +68,12 @@ export const getContainerDefinitions = (postgresAddress: string,
                     {
                         key: "NODE_CONFIG",
                         value : "{\"Database\":{ \"ConnectionString\":\"postgres://postgres:devpostgrespwd@"
-                            + postgresAddress + ":5432/\"}}"
+                            + postgresAddress + ":5432/\"},"
+                            + "\"Logfiles\": {"
+                            + "\"AccessFilename\": \"access.log\","
+                            + "\"AccessLogFormat\": \"[:date[clf]] :id :status :method :url :response-time\","
+                            + "\"SeqUrl\":\"http://" + postgresAddress + ":5341\""
+                            + "}}"
                     }
                 ],
                 PortMapping: [
