@@ -1,23 +1,25 @@
 import * as React from "react";
 import { hot } from "react-hot-loader";
 import * as api from "../../api";
-import { Dropdown, Button, Icon } from "semantic-ui-react";
-import { ITaskUpdate } from "../../../common/models/ITaskUpdate";
+import { Button, Icon } from "semantic-ui-react";
+import { MessageDisplay } from "../common/MessageDisplay";
 import { Sockets } from "../../socket";
+import { ITaskUpdate } from "../../../common/models/ITaskUpdate";
 
-interface IThirdStepState {
+interface ISecondStepState {
     ContainerProgress: ITaskUpdate[];
     DisplayProgressBars: boolean;
     connectMessageSuccess?: boolean;
     connectMessage: string;
-    Disabled: boolean;
+    Enabled: boolean;
 }
 
 interface IPropData {
+    Enabled: boolean;
     onReadyNextStep: () => void;
 }
 
-class ThirdStepComponent extends React.Component<IPropData, IThirdStepState> {
+class DownloadStepComponent extends React.Component<IPropData, ISecondStepState> {
     constructor(props: any) {
         super(props);
         this.state = {
@@ -25,11 +27,11 @@ class ThirdStepComponent extends React.Component<IPropData, IThirdStepState> {
             DisplayProgressBars: false,
             connectMessage: "",
             connectMessageSuccess: null,
-            Disabled: false
+            Enabled: true
         };
     }
 
-    public receiveRunUpdate = async (data: ITaskUpdate) => {
+    public receivePullUpdate = async (data: ITaskUpdate) => {
         const existingContainerProgress = this.state.ContainerProgress.find((p) => p.Name === data.Name);
         if (existingContainerProgress === undefined) {
             const newContainerProgress =  Object.assign(this.state.ContainerProgress, {});
@@ -52,18 +54,18 @@ class ThirdStepComponent extends React.Component<IPropData, IThirdStepState> {
 
     public handleGo = async () => {
         this.setState({
-            Disabled: true
+            Enabled: false
         });
-        Sockets().startContainerRunUpdateReceive(this.receiveRunUpdate);
-        const returnVal = await api.runDockerContainers();
+        Sockets().startContainerPullUpdateReceive(this.receivePullUpdate);
+        const returnVal = await api.pullDockerContainers();
         if (!returnVal.Success) {
-            Sockets().stopContainerRunUpdateReceive();
+            Sockets().stopContainerPullUpdateReceive();
         }
     }
 
     public render() {
         const progressRows = this.state.ContainerProgress.map((p) => {
-            return <div>{p.Description}
+            return <div key={p.Name}>{p.Description}
                 { p.InProgress &&
                     <Icon loading name="spinner" />
                 }
@@ -72,10 +74,12 @@ class ThirdStepComponent extends React.Component<IPropData, IThirdStepState> {
                 }
             </div>;
         });
+        const enabled = this.props.Enabled && this.state.Enabled;
         return (
           <div className="row">
-            <h2>Step 3 - Run Docker Containers</h2>
-            <Button onClick={this.handleGo} disabled={this.state.Disabled}>Go!</Button>
+            <h2>Download Docker Containers</h2>
+            <Button disabled={!enabled} onClick={this.handleGo}>Go!</Button>
+            <MessageDisplay messageSuccess={this.state.connectMessageSuccess} message={this.state.connectMessage} />
             <p></p>
             {progressRows}
           </div>
@@ -83,4 +87,4 @@ class ThirdStepComponent extends React.Component<IPropData, IThirdStepState> {
     }
 }
 
-export const ThirdStepPage = hot(module)(ThirdStepComponent);
+export const DownloadStep = hot(module)(DownloadStepComponent);

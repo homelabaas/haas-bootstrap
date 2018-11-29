@@ -1,34 +1,47 @@
 import * as sleep from "await-sleep";
 import * as Docker from "dockerode";
-import { IConnectRequest } from "../common/models/IConnectRequest";
-import { ITaskUpdate } from "../common/models/ITaskUpdate";
+import * as URL from "url";
+import { IConnectRequest } from "../../common/models/IConnectRequest";
+import { ITaskUpdate } from "../../common/models/ITaskUpdate";
 import { IDockerContainer } from "./IDockerContainer";
-import { PullImage } from "./pullDockerImage";
+import { PullImageByAddress, PullImageBySocket } from "./pullDockerImage";
 
 const localSocket = "/var/run/docker.sock";
 const windowsSocket = "//./pipe/docker_engine";
 
 export class DockerHelper {
     public Docker: Docker;
+    public ConnectionType: string;
     public Socket: string;
+    public TargetHost: string;
+    public TargetProtocol: string;
+    public TargetPort: number;
 
     constructor(connectionRequest: IConnectRequest) {
+        this.ConnectionType = connectionRequest.Type;
         if (connectionRequest.Type === "dockerwindows") {
-            this.Init("socket", windowsSocket);
+            this.InitSocket(windowsSocket);
         } else if (connectionRequest.Type === "dockermac") {
-            this.Init("socket", localSocket);
+            this.InitSocket(localSocket);
         } else if (connectionRequest.Type === "docker") {
-            this.Init("socket", localSocket);
+            this.InitSocket(localSocket);
+        } else if (connectionRequest.Type === "dockertarget") {
+            this.InitAddress(connectionRequest.Address);
         }
     }
 
-    public Init(type: "socket" | "ip", socket?: string, host?: string, port?: number) {
-        if (type === "socket") {
-            this.Docker = new Docker({socketPath : socket});
-            this.Socket = socket;
-        } else if (type === "ip") {
-            this.Docker = new Docker({host, port});
-        }
+    public InitSocket = (socket) => {
+        this.Docker = new Docker({socketPath : socket});
+        this.Socket = socket;
+    }
+
+    public InitAddress = (address: string) => {
+        const parsedUrl = URL.parse(address);
+        this.TargetProtocol = parsedUrl.protocol.substr(0, parsedUrl.protocol.length - 1);
+        this.TargetHost = parsedUrl.hostname;
+        this.TargetPort = +parsedUrl.port;
+        this.Docker = new Docker({ protocol: this.TargetProtocol as "http" || "https",
+            host: this.TargetHost , port: this.TargetPort});
     }
 
     public CheckList = async () => {
@@ -54,6 +67,7 @@ export class DockerHelper {
                 });
                 const createOptions: Docker.ContainerCreateOptions = {
                     Image: container.Container + ":latest",
+                    name: container.Name,
                     AttachStdin: false,
                     AttachStdout: false,
                     AttachStderr: false,
@@ -119,7 +133,12 @@ export class DockerHelper {
                     InProgress: true,
                     IsFinished: false
                 });
-                await PullImage(container.Container, this.Socket);
+                if (this.ConnectionType === "dockertarget") {
+                    await PullImageByAddress(container.Container,
+                        this.TargetProtocol, this.TargetHost, this.TargetPort);
+                } else {
+                    await PullImageBySocket(container.Container, this.Socket);
+                }
                 updateProgress({
                     Name: container.Container,
                     InProgress: false,

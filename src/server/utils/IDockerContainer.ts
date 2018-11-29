@@ -1,4 +1,5 @@
 export interface IDockerContainer {
+    Name: string;
     Container: string;
     EnvironmentVars: Array<{ key: string, value: string}>;
     PortMapping: Array<{ host: number, container: number}>;

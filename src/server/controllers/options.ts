@@ -8,29 +8,28 @@ const deploymentOptions: IDeploymentOption[] = [
     {
         Id: "dockerwindows",
         Description: "Windows",
-        ExtendedDescription: "When are running this app on a Windows machine (not Docker for Windows)."
+        ExtendedDescription: "When are running this app on a Windows machine (not Docker for Windows).",
+        RequiresTargetInfo: false
     },
     {
         Id: "dockermac",
         Description: "Mac",
-        ExtendedDescription: "When are running this app on a Mac (not Docker for Mac)."
+        ExtendedDescription: "When are running this app on a Mac (not Docker for Mac).",
+        RequiresTargetInfo: false
     },
     {
         Id: "docker",
         Description: "Docker For Mac/Windows",
         ExtendedDescription:
-            "When are running this app using Docker for Mac/Windows. This is the standard way to deploy."
+            "When are running this app using Docker for Mac/Windows. This is the standard way to deploy.",
+        RequiresTargetInfo: false
     },
-    // {
-    //     Id: "dockertarget",
-    //     Description: "Another Docker Machine",
-    //     ExtendedDescription: "When have another Docker machine, whose API is available over the network."
-    // },
-    // {
-    //     Id: "compose",
-    //     Description: "Docker Compose File",
-    //     ExtendedDescription: "This will give you a sample docker-compose.yml file to use yourself with docker compose."
-    // }
+    {
+        Id: "dockertarget",
+        Description: "Another Docker Machine",
+        ExtendedDescription: "When have another Docker machine, whose API is available over the network.",
+        RequiresTargetInfo: true
+    },
 ];
 
 router.get("/", async (req: Request, res: Response) => {

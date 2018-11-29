@@ -1,6 +1,6 @@
 import * as bunyan from "bunyan";
 import * as http from "http";
-import { SocketManager } from "./socketManager";
+import { SocketManager } from "./utils/socketManager";
 
 class DependencyManager {
 

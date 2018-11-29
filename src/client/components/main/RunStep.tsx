@@ -1,24 +1,27 @@
 import * as React from "react";
 import { hot } from "react-hot-loader";
 import * as api from "../../api";
-import { Button, Icon } from "semantic-ui-react";
-import { MessageDisplay } from "../common/MessageDisplay";
-import { Sockets } from "../../socket";
+import { Dropdown, Button, Icon } from "semantic-ui-react";
 import { ITaskUpdate } from "../../../common/models/ITaskUpdate";
+import { Sockets } from "../../socket";
+import { IMigrateRequest } from "../../../common/models/IMigrateRequest";
 
-interface ISecondStepState {
+interface IThirdStepState {
     ContainerProgress: ITaskUpdate[];
     DisplayProgressBars: boolean;
     connectMessageSuccess?: boolean;
     connectMessage: string;
-    Disabled: boolean;
+    Enabled: boolean;
 }
 
 interface IPropData {
+    Enabled: boolean;
     onReadyNextStep: () => void;
+    MigrateSettings: IMigrateRequest;
+    EnableMigrate: boolean;
 }
 
-class SecondStepComponent extends React.Component<IPropData, ISecondStepState> {
+class RunStepComponent extends React.Component<IPropData, IThirdStepState> {
     constructor(props: any) {
         super(props);
         this.state = {
@@ -26,11 +29,11 @@ class SecondStepComponent extends React.Component<IPropData, ISecondStepState> {
             DisplayProgressBars: false,
             connectMessage: "",
             connectMessageSuccess: null,
-            Disabled: false
+            Enabled: true
         };
     }
 
-    public receivePullUpdate = async (data: ITaskUpdate) => {
+    public receiveRunUpdate = async (data: ITaskUpdate) => {
         const existingContainerProgress = this.state.ContainerProgress.find((p) => p.Name === data.Name);
         if (existingContainerProgress === undefined) {
             const newContainerProgress =  Object.assign(this.state.ContainerProgress, {});
@@ -53,18 +56,25 @@ class SecondStepComponent extends React.Component<IPropData, ISecondStepState> {
 
     public handleGo = async () => {
         this.setState({
-            Disabled: true
+            Enabled: false
         });
-        Sockets().startContainerPullUpdateReceive(this.receivePullUpdate);
-        const returnVal = await api.pullDockerContainers();
-        if (!returnVal.Success) {
-            Sockets().stopContainerPullUpdateReceive();
+        Sockets().startContainerRunUpdateReceive(this.receiveRunUpdate);
+        if (this.props.EnableMigrate) {
+            const returnVal = await api.runDockerContainers(this.props.MigrateSettings);
+            if (!returnVal.Success) {
+                Sockets().stopContainerRunUpdateReceive();
+            }
+        } else {
+            const returnVal = await api.runDockerContainers();
+            if (!returnVal.Success) {
+                Sockets().stopContainerRunUpdateReceive();
+            }
         }
     }
 
     public render() {
         const progressRows = this.state.ContainerProgress.map((p) => {
-            return <div>{p.Description}
+            return <div key={p.Name}>{p.Description}
                 { p.InProgress &&
                     <Icon loading name="spinner" />
                 }
@@ -73,11 +83,11 @@ class SecondStepComponent extends React.Component<IPropData, ISecondStepState> {
                 }
             </div>;
         });
+        const enabled = this.state.Enabled && this.props.Enabled;
         return (
           <div className="row">
-            <h2>Step 2 - Download Docker Containers</h2>
-            <Button onClick={this.handleGo} disabled={this.state.Disabled}>Go!</Button>
-            <MessageDisplay messageSuccess={this.state.connectMessageSuccess} message={this.state.connectMessage} />
+            <h2>Start Docker Containers</h2>
+            <Button onClick={this.handleGo} disabled={!enabled}>Go!</Button>
             <p></p>
             {progressRows}
           </div>
@@ -85,4 +95,4 @@ class SecondStepComponent extends React.Component<IPropData, ISecondStepState> {
     }
 }
 
-export const SecondStepPage = hot(module)(SecondStepComponent);
+export const RunStep = hot(module)(RunStepComponent);
