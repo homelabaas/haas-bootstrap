@@ -1,6 +1,12 @@
 # Homelab as a Service Bootstrap
 
+CircleCI Build
+
 [![CircleCI](https://circleci.com/gh/homelabaas/haas-bootstrap.svg?style=svg)](https://circleci.com/gh/homelabaas/haas-bootstrap)
+
+Snyk Vulnerability Scan
+
+[![Known Vulnerabilities](https://snyk.io/test/github/homelabaas/haas-bootstrap/badge.svg)](https://snyk.io/test/github/homelabaas/haas-bootstrap)
 
 ## Info
 
