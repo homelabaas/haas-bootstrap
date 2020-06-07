@@ -30,7 +30,7 @@ const logger = bunyan.createLogger({
         }
     ]
 });
-const server: http.Server = http.createServer(app.createApp(logfilePath));
+const server: http.Server = http.createServer(app.createApp(logfilePath, logger));
 
 function onError(error: NodeJS.ErrnoException): void {
     if (error.syscall !== "listen") {

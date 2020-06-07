@@ -1,4 +1,4 @@
-FROM node:8.12-alpine
+FROM node:lts-alpine
 
 RUN apk update && \
     apk upgrade && \
