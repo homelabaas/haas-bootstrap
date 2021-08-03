@@ -71,7 +71,7 @@
         "valid-url": "^1.0.9",
         "webpack-dev-middleware": "^3.7.2",
         "webpack-hot-middleware": "^2.25.0",
-        "xmldom": "^0.3.0",
+        "xmldom": "^0.6.0",
         "xmlhttprequest-cookie": "^0.9.9"
     },
     "devDependencies": {
